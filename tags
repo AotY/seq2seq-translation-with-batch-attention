@@ -1,0 +1,8 @@
+Vocab	data_set.py	/^        self.english_vocab = Vocab('english')$/
+__init__	decoder.py	/^        super(Decoder, self).__init__()$/
+add_argument_group	train_opt.py	/^    group = parser.add_argument_group('data set op/
+add_word	vocab.py	/^            self.add_word(word)$/
+basename	train.py	/^program = os.path.basename(sys.argv[0])$/
+get	vocab.py	/^        return self.idx2word.get(id, UNK)$/
+init_hidden	seq2seq.py	/^        encoder_hidden_state = self.encoder.init_h/
+model	train.py	/^    encoder_outputs, decoder_outputs = model(encod/

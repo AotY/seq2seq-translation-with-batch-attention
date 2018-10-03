@@ -1,0 +1,10 @@
+### Python
+*.pyc
+data/
+__pycache__/
+logs/
+models/
+.idea/
+.ropeproject
+
+
