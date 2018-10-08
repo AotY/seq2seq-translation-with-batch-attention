@@ -21,7 +21,7 @@ python train.py \
     --log_file ./logs/train.log \
     --model_save_path ./models \
     --train_from \
-    --checkpoint ./models/checkpoint.epoch-3.pth \
+    --checkpoint ./models/checkpoint.epoch-5.pth \
 
 
 /

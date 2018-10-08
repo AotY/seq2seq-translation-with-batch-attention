@@ -37,8 +37,8 @@ class DataSet:
                 for line in f:
                     english, french = line.rstrip().split('\t')
 
-                    english_tokens = word_tokenize(english, language='english')
-                    french_tokens = word_tokenize(french, language='french')
+                    english_tokens = [token.lower() for token in word_tokenize(english, language='english')]
+                    french_tokens = [token.lower() for token in word_tokenize(french, language='french')]
 
                     # french contains a sos or eos
                     if len(english_tokens) > max_len or len(
@@ -111,7 +111,7 @@ class DataSet:
     '''for evaluate'''
     def input_to_ids(self, input, max_len, language):
 
-        tokens = word_tokenize(input, language=language)
+        tokens = [token.lower() for token in word_tokenize(input, language=language)]
 
         if language == 'english':
             input_ids = self.english_vocab.words_to_id(tokens)

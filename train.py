@@ -9,6 +9,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+import matplotlib.ticker as ticker
+import numpy as np
+import seaborn
+seaborn.set()
+
 from vocab import Vocab
 from vocab import PAD_id, SOS_id, EOS_id
 from seq2seq import Seq2seq
@@ -58,16 +65,17 @@ def build_optimizer(model):
 
 
 def train_epochs(data_set, model, optimizer, criterion):
-    model.train() # set to train state
+    model.train()  # set to train state
     for epoch in range(1, opt.epochs + 1):
         logger.info('---------------- epoch: %d --------------------' % (epoch))
         data_set.shuffle()
 
         total_loss = 0
+        plot_losses = []
 
         iters = data_set.get_size() // opt.batch_size + 1
 
-        for iter in range(iters):
+        for iter in range(1, 1 + iters):
             encoder_inputs, decoder_targets, \
                 encoder_inputs_lengths, decoder_targets_length = data_set.next_batch(
                     batch_size=opt.batch_size, max_len=opt.max_len)
@@ -79,13 +87,19 @@ def train_epochs(data_set, model, optimizer, criterion):
             total_loss += loss
 
             if iter % opt.log_interval == 0:
-                logger.info('train epoch: %d\titer/iters: %d%%\tloss: %.4f' %
-                            (epoch, iter / iters * 100, total_loss / (iter + 1)))
+                avg_loss = total_loss / opt.log_interval
                 # reset total_loss
                 total_loss = 0
+                logger.info('train epoch: %d\titer/iters: %d%%\tloss: %.4f' %
+                            (epoch, iter / iters * 100, avg_loss))
+
+                #plot
+                plot_losses.append(avg_loss)
+        show_plot(plot_losses)
+
 
         # save model of each epoch
-        save_state = {
+        save_state={
             'epoch': epoch,
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict()
@@ -94,8 +108,8 @@ def train_epochs(data_set, model, optimizer, criterion):
         # save checkpoint, including epoch, seq2seq_mode.state_dict() and
         # optimizer.state_dict()
         save_checkpoint(state=save_state,
-                        is_best=False,
-                        filename=os.path.join(opt.model_save_path, 'checkpoint.epoch-%d.pth' % epoch))
+                        is_best = False,
+                        filename = os.path.join(opt.model_save_path, 'checkpoint.epoch-%d.pth' % epoch))
 
         #  logger.info('train epoch: %d\taverage loss: %.4f' %
         #  (epoch, total_loss / iters))
@@ -103,30 +117,30 @@ def train_epochs(data_set, model, optimizer, criterion):
 
 def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_targets_length, model, optimizer, criterion):
     # decoder input
-    decoder_input = torch.ones(
-        (1, opt.batch_size), dtype=torch.long) * SOS_id
+    decoder_input=torch.ones(
+        (1, opt.batch_size), dtype = torch.long) * SOS_id
 
     #  print(encoder_inputs)
     #  print(encoder_inputs_length)
     # model forward
-    encoder_outputs, decoder_outputs = model(encoder_inputs, encoder_inputs_length,
-                                                   decoder_input, decoder_targets,
-                                                   opt.batch_size, opt.max_len,
-                                                   opt.teacher_forcing_ratio)
+    encoder_outputs, decoder_outputs=model(encoder_inputs, encoder_inputs_length,
+                                             decoder_input, decoder_targets,
+                                             opt.batch_size, opt.max_len,
+                                             opt.teacher_forcing_ratio)
 
-    loss = 0
+    loss=0
 
     # clear the gradients off all optimzed
     optimizer.zero_grad()
 
     # compting loss
-    decoder_outputs = decoder_outputs.view(-1, decoder_outputs.shape[-1])
-    decoder_targets = decoder_targets.view(-1)
+    decoder_outputs=decoder_outputs.view(-1, decoder_outputs.shape[-1])
+    decoder_targets=decoder_targets.view(-1)
 
     #  print(decoder_outputs.shape)
     #  print(decoder_targets.shape)
 
-    loss = criterion(decoder_outputs, decoder_targets)
+    loss=criterion(decoder_outputs, decoder_targets)
 
     # computes the gradient of current tensor, graph leaves.
     loss.backward()
@@ -142,13 +156,11 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
 
 
 def evaluate(model, data_set, sentence):
-    model.eval() # set to evaluate state
+    model.eval()  # set to evaluate state
     with torch.no_grad():
         # to ids
-        encoder_inputs, encoder_inputs_length = data_set.input_to_ids(
+        encoder_inputs, encoder_inputs_length=data_set.input_to_ids(
             sentence, opt.max_len, 'english')
-
-        print(encoder_inputs)
 
         # to model
         decoder_input = torch.ones((1, 1), dtype=torch.long) * SOS_id
@@ -158,11 +170,13 @@ def evaluate(model, data_set, sentence):
 
         #  print(decoder_outputs.shape) # [max_len, 1, vocab_size]
 
-        decoder_outputs = decoder_outputs.squeeze(dim=1) # [max_len, vocab_size]
+        decoder_outputs = decoder_outputs.squeeze(
+            dim=1)  # [max_len, vocab_size]
 
         # get outputs index
-        _, outputs_index = decoder_outputs.topk(1, dim=1) # outputs_index -> [max_len, 1]
-        outputs_index = outputs_index.view(-1).tolist() # [max_len]
+        _, outputs_index = decoder_outputs.topk(
+            1, dim=1)  # outputs_index -> [max_len, 1]
+        outputs_index = outputs_index.view(-1).tolist()  # [max_len]
         sentence = data_set.outputs_to_sentence(outputs_index, 'french')
 
         return sentence
@@ -188,6 +202,32 @@ def load_checkpoint(filename='checkpoint.pth'):
     return checkpoint
 
 
+def show_plot(points):
+    plt.figure()
+    fig, ax = plt.subplots()
+    loc = ticker.MultipleLocator(base=0.2)
+    ax.yaxis.set_major_locator(loc)
+    plt.plot(points)
+
+def showAttention(input_sentence, output_words, attentions):
+    # Set up figure with colorbar
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(attentions.numpy(), cmap='bone')
+    fig.colorbar(cax)
+
+    # Set up axes
+    ax.set_xticklabels([''] + input_sentence.split(' ') +
+                       ['<EOS>'], rotation=90)
+    ax.set_yticklabels([''] + output_words)
+
+    # Show label at every tick
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    plt.show()
+
+
 if __name__ == "__main__":
 
     # train()
@@ -208,9 +248,9 @@ if __name__ == "__main__":
     if opt.train_from:
         checkpoint = load_checkpoint(opt.checkpoint)
         model.load_state_dict(checkpoint['state_dict'])
-        #  model.eval()
         optimizer.load_state_dict(checkpoint['optimizer'])
 
+        # eval
         while True:
             english = input("Please input an english sentence: ")
             french = evaluate(model, data_set, english)

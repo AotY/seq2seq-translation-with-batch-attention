@@ -79,10 +79,11 @@ class Seq2seq(nn.Module):
                     decoder_input, decoder_hidden_state, encoder_outputs)
 
                 decoder_outputs[di] = output
-                topv, topi = output.topk(1, dim=1)
-                decoder_input = topi.squeeze().detach()
+                #  topv, topi = output.topk(1, dim=1)
+                #  decoder_input = topi.squeeze().detach()
+                decoder_input = torch.argmax(output).detach()
 
-                ni = topi[0][0].item()
+                ni = decoder_input.item()
                 if ni == EOS_id:
                     break
 
@@ -116,10 +117,11 @@ class Seq2seq(nn.Module):
 
             print('output: ', output.shape)
             decoder_outputs[di] = output
-            topv, topi = output.topk(1, dim=1)
-            decoder_input = topi.detach()
+            #  topv, topi = output.topk(1, dim=1)
+            #  decoder_input = topi.squeeze().detach()
+            decoder_input = torch.argmax(output).detach()
 
-            ni = topi[0][0].item()
+            ni = decoder_input[0].item()
             if ni == EOS_id:
                 break
 
