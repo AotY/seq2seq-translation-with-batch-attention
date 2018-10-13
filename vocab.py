@@ -26,7 +26,6 @@ class Vocab:
         else:
             self.word2count[word] += 1
 
-
     ''' filtering words by min count'''
     def filter_words(self, min_count=3):
         sorted_list = sorted(self.word2count.items(), key=lambda item: item[1], reverse=True)
@@ -54,7 +53,7 @@ class Vocab:
         return word_ids
 
     def get_vocab_size(self):
-        return self.n_words
+        return len(self.word2idx)
 
     def ids_to_sentence(self, ids):
         words = [self.id_to_word(id) for id in ids if id not in [PAD_id, SOS_id, EOS_id, UNK_id]]
