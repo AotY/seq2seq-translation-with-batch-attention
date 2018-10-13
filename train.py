@@ -150,7 +150,7 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
     loss.backward()
 
     # Clip gradients: gradients are modified in place
-    _ = nn.utiles.clip_grad_norm_(model.parameters(), opt.max_norm)
+    _ = nn.utils.clip_grad_norm_(model.parameters(), opt.max_norm)
 
     # performs a single optimization setp.
     optimizer.step()

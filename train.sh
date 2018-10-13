@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+export CUDA_VISIBLE_DEVICES=4
+
 python train.py \
     --filename ./eng-fra.txt \
     --encoder_embedding_size 256 \
