@@ -15,18 +15,18 @@ python train.py \
     --max_norm 50.0 \
     --max_len 20 \
     --min_count 3 \
-    --lr 0.001 \
-    --epochs 15 \
+    --lr 0.005 \
+    --epochs 5 \
     --start_epoch 5 \
     --batch_size 128 \
     --teacher_forcing_ratio 0.5 \
     --seed 7 \
     --device cuda \
-    --log_interval 256 \
+    --log_interval 100 \
     --log_file ./logs/train.log \
     --model_save_path ./models \
     --train_or_eval train \
-    --checkpoint ./models/checkpoint.epoch-5.pth \
+    # --checkpoint ./models/checkpoint.epoch-5.pth \
 
 /
 

@@ -134,7 +134,7 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
                                              opt.batch_size, opt.max_len,
                                              opt.teacher_forcing_ratio)
 
-    loss=0
+    loss = 0
 
     # clear the gradients off all optimzed
     optimizer.zero_grad()
@@ -145,7 +145,6 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
 
     #  print(decoder_outputs.shape)
     #  print(decoder_targets.shape)
-
     loss=criterion(decoder_outputs, decoder_targets)
 
     # computes the gradient of current tensor, graph leaves.
@@ -156,9 +155,6 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
 
     # performs a single optimization setp.
     optimizer.step()
-
-    #  loss = float(loss)
-    #  logger.info('iter loss: %.4f' % (loss))
 
     return loss.item()
 
@@ -248,8 +244,7 @@ if __name__ == "__main__":
     # loss function
     criterion = nn.NLLLoss(
         ignore_index=PAD_id,
-        reduction='elementwise_mean'
-    )
+        reduction='elementwise_mean')
 
     # Loading checkpoint
     checkpoint = None

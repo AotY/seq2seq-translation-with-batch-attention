@@ -22,6 +22,8 @@ class Seq2seq(nn.Module):
         # super class init
         super(Seq2seq, self).__init__()
 
+        self.device = device
+
         # encoder
         self.encoder = Encoder(encoder_vocab_size, encoder_embedding_size,
                                encoder_hidden_size, encoder_num_layers,
@@ -38,7 +40,6 @@ class Seq2seq(nn.Module):
         init_lstm_orth(self.encoder.lstm, gain)
         init_lstm_orth(self.decoder.lstm, gain)
 
-        self.device = device
 
 
     def forward(self, encoder_inputs, encoder_input_lengths,
