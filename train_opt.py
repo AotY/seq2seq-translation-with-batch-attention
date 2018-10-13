@@ -74,6 +74,11 @@ def model_opt(parser):
                        default=3,
                        help='filtering word by min count.')
 
+    group.add_argument('--max_norm',
+                       type=float,
+                       default=50.0,
+                       help='Clip gradients: gradients are modified in place.')
+
 
 def train_opt(parser):
     group = parser.add_argument_group('train opt')

@@ -38,6 +38,8 @@ model_opt(parser)
 train_opt(parser)
 opt = parser.parse_args()
 
+device = torch.device(opt.device)
+
 ''' seq2seq_mode'''
 
 
@@ -56,6 +58,8 @@ def build_model(encoder_vocab, decoder_vocab):
                     tied=opt.tied)
 
     print(model)
+
+    model.to(device=device)
     return model
 
 
@@ -94,9 +98,8 @@ def train_epochs(data_set, model, optimizer, criterion):
                             (epoch, iter / iters * 100, avg_loss))
 
                 #plot
-                plot_losses.append(avg_loss)
-        show_plot(plot_losses)
-
+                #  plot_losses.append(avg_loss)
+        #  show_plot(plot_losses)
 
         # save model of each epoch
         save_state={
@@ -118,7 +121,8 @@ def train_epochs(data_set, model, optimizer, criterion):
 def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_targets_length, model, optimizer, criterion):
     # decoder input
     decoder_input=torch.ones(
-        (1, opt.batch_size), dtype = torch.long) * SOS_id
+        (1, opt.batch_size),
+        dtype=torch.long, device=device) * SOS_id
 
     #  print(encoder_inputs)
     #  print(encoder_inputs_length)
@@ -145,6 +149,9 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
     # computes the gradient of current tensor, graph leaves.
     loss.backward()
 
+    # Clip gradients: gradients are modified in place
+    _ = nn.utiles.clip_grad_norm_(model.parameters(), opt.max_norm)
+
     # performs a single optimization setp.
     optimizer.step()
 
@@ -152,7 +159,6 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
     #  logger.info('iter loss: %.4f' % (loss))
 
     return loss.item()
-    #  return loss / float(sum(decoder_targets_length))
 
 
 def evaluate(model, data_set, sentence):
@@ -170,13 +176,11 @@ def evaluate(model, data_set, sentence):
 
         #  print(decoder_outputs.shape) # [max_len, 1, vocab_size]
 
-        decoder_outputs = decoder_outputs.squeeze(
-            dim=1)  # [max_len, vocab_size]
+        decoder_outputs = decoder_outputs.squeeze(dim=1)  # [max_len, vocab_size]
 
         # get outputs index
-        _, outputs_index = decoder_outputs.topk(
-            1, dim=1)  # outputs_index -> [max_len, 1]
-        outputs_index = outputs_index.view(-1).tolist()  # [max_len]
+        _, outputs_index = decoder_outputs.topk(1, dim=1)  # outputs_index -> [max_len, 1]
+        outputs_index = outputs_index.view(-1).detach().tolist()  # [max_len]
         sentence = data_set.outputs_to_sentence(outputs_index, 'french')
 
         return sentence
@@ -231,7 +235,7 @@ def showAttention(input_sentence, output_words, attentions):
 if __name__ == "__main__":
 
     # train()
-    data_set = DataSet(opt.filename, opt.max_len, opt.min_count)
+    data_set = DataSet(opt.filename, opt.max_len, opt.min_count, device)
 
     model = build_model(data_set.english_vocab, data_set.french_vocab)
     # evaluate()
@@ -259,6 +263,5 @@ if __name__ == "__main__":
     else:
         # train
         train_epochs(data_set, model, optimizer, criterion)
-
 
 # --filename ./eng-fra.txt --encoder_embedding_size 100 --encoder_hidden_size 100 --encoder_num_layers 2 --encoder_bidirectional --decoder_embedding_size 100 --decoder_hidden_size 100 --decoder_num_layers 2 --tied --dropout_ratio 0.5 --max_len 20 --lr 0.001 --epochs 5 --batch_size 128 --teacher_forcing_ratio 0.5 --seed 7  --device cpu --log_interval 50 --log_file ./logs/train.log --model_save_path ./models --start_epoch 0

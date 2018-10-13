@@ -54,7 +54,6 @@ class Seq2seq(nn.Module):
         # decoder
 
         # encoder_hidden_state -> [num_layers * num_directions, batch, hidden_size]
-
         decoder_hidden_state = tuple(
             [item[:2, :, :] + item[2:, :, :] for item in encoder_hidden_state])
 

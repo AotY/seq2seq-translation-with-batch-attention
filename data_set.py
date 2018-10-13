@@ -10,7 +10,7 @@ from vocab import EOS_id
 
 
 class DataSet:
-    def __init__(self, filename, max_len, min_count):
+    def __init__(self, filename, max_len, min_count, device=None):
 
         self.english_vocab = Vocab('english')
         self.french_vocab = Vocab('french')
@@ -18,6 +18,8 @@ class DataSet:
         self._pairs = []
         self._indicator = 0
         self.min_count = min_count
+
+        self.device = device
 
         # load data, build vocab
         self.load_data(filename, max_len)
@@ -82,8 +84,12 @@ class DataSet:
         next_pair = self._pairs[self._indicator: next_indicator]
 
         batch_english_ids = torch.zeros(
-            (max_len, batch_size), dtype=torch.long)
-        batch_french_ids = torch.zeros((max_len, batch_size), dtype=torch.long)
+            (max_len, batch_size), 
+            dtype=torch.long,
+            device=self.device)
+        batch_french_ids = torch.zeros((max_len, batch_size), 
+                                       dtype=torch.long,
+                                       device=self.device)
 
         batch_english_lengths = []
         batch_french_lengths = []
@@ -95,11 +101,10 @@ class DataSet:
             batch_english_lengths.append(len(english_ids))
             batch_french_lengths.append(len(french_ids))
 
-            french_ids.append(EOS_id)
-
             for index, eid in enumerate(english_ids):
                 batch_english_ids[index, batch_id] = eid
 
+            french_ids.append(EOS_id)
             for index, fid in enumerate(french_ids):
                 batch_french_ids[index, batch_id] = fid
 
@@ -121,7 +126,7 @@ class DataSet:
         lengths = []
         lengths.append(len(input_ids))
 
-        batch_english_ids = torch.zeros((max_len, 1), dtype=torch.long)
+        batch_english_ids = torch.zeros((max_len, 1), dtype=torch.long, device=self.device)
 
         for index, id in enumerate(input_ids):
             batch_english_ids[index, 0] = id
