@@ -219,7 +219,7 @@ class LuongAttnDecoder(nn.Module):
                             dropout=dropout_ratio)
 
         # concat linear
-        self.concat_linear(self.hidden_size * 2, self.hidden_size)
+        self.concat_linear = nn.Linear(self.hidden_size * 2, self.hidden_size)
 
         # linear
         self.linear = nn.Linear(self.hidden_size,
