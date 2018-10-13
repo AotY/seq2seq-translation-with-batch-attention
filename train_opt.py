@@ -89,6 +89,11 @@ def train_opt(parser):
     group.add_argument('--epochs', type=int, default=5,
                        help='upper epoch limit')
 
+    group.add_argument('--start_epoch', 
+                       type=int, 
+                       default=1,
+                       help='start epoch')
+
     group.add_argument('--use_teacher_forcing', action='store_true',
                        help='is use teacher forcing.')
 
