@@ -73,7 +73,7 @@ def build_optimizer(model):
 
 def train_epochs(data_set, model, optimizer, criterion):
     model.train()  # set to train state
-    for epoch in range(opt.start_epoch + 1, opt.epochs + 1):
+    for epoch in range(opt.start_epoch, opt.epochs + 1):
         logger.info('---------------- epoch: %d --------------------' % (epoch))
         data_set.shuffle()
 
@@ -143,8 +143,6 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
     decoder_outputs=decoder_outputs.view(-1, decoder_outputs.shape[-1])
     decoder_targets=decoder_targets.view(-1)
 
-    print(decoder_outputs.shape)
-    print(decoder_targets.shape)
     print(decoder_outputs.device)
     print(decoder_targets.device)
     loss=criterion(decoder_outputs, decoder_targets)

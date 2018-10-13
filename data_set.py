@@ -86,8 +86,8 @@ class DataSet:
         next_pair = self._pairs[self._indicator: next_indicator]
 
         batch_english_ids = torch.zeros((max_len, batch_size),
-            dtype=torch.long,
-            device=self.device)
+                                        dtype=torch.long,
+                                        device=self.device)
 
         batch_french_ids = torch.zeros((max_len, batch_size),
                                        dtype=torch.long,

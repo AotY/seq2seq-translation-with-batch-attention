@@ -51,6 +51,10 @@ class Seq2seq(nn.Module):
             decoder_targets: [seq_len, batch_size]
 
         '''
+        encoder_inputs.to(device=self.device)
+        decoder_input.to(device=self.device)
+        decoder_targets.to(device=self.device)
+
         # encoder
         encoder_hidden_state = self.encoder.init_hidden(batch_size, self.device)
 
