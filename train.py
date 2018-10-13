@@ -116,7 +116,7 @@ def train_epochs(data_set, model, optimizer, criterion):
         # optimizer.state_dict()
         save_checkpoint(state=save_state,
                         is_best = False,
-                        filename = os.path.join(opt.model_save_path, 'checkpoint.epoch-%d.pth' % epoch))
+                        filename = os.path.join(opt.model_save_path, 'checkpoint.%s.epoch-%d.pth' % (opt.decoder_attn_type, epoch)))
 
         #  logger.info('train epoch: %d\taverage loss: %.4f' %
         #  (epoch, total_loss / iters))
