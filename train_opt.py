@@ -49,6 +49,12 @@ def model_opt(parser):
                        help='decoder lstm num layers.'
                        )
 
+    group.add_argument('--decoder_attn_type',
+                       type=str,
+                       default='normal',
+                       help='normal | bahdanau | luong'
+                       )
+
     group.add_argument('--teacher_forcing_ratio',
                        type=float,
                        default=0.5,

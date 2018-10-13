@@ -10,6 +10,7 @@ python train.py \
     --decoder_embedding_size 256 \
     --decoder_hidden_size 256 \
     --decoder_num_layers 2 \
+    --decoder_attn_type bahdanau \
     --tied \
     --dropout_ratio 0.5 \
     --max_norm 50.0 \

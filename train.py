@@ -55,6 +55,7 @@ def build_model(encoder_vocab, decoder_vocab):
                     decoder_embedding_size=opt.decoder_embedding_size,
                     decoder_hidden_size=opt.decoder_hidden_size,
                     decoder_num_layers=opt.decoder_num_layers,
+                    decoder_attn_type=opt.decoder_attn_type,
                     dropout_ratio=opt.dropout_ratio,
                     padding_idx=PAD_id,
                     tied=opt.tied,
