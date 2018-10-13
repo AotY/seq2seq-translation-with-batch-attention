@@ -49,6 +49,9 @@ class DataSet:
                     english_tokens = english_tokens[-min(max_len - 1, len(english_tokens)): ]
                     french_tokens = french_tokens[-min(max_len - 1, len(french_tokens)): ]
 
+                    print('english_tokens: {}'.format(english_tokens))
+                    print('french_tokens: {}'.format(french_tokens))
+
                     self._pairs.append(tuple([english_tokens, french_tokens]))
 
                     # add to vocab
@@ -109,9 +112,6 @@ class DataSet:
             french_ids.append(EOS_id)
             for index, fid in enumerate(french_ids):
                 batch_french_ids[index, batch_id] = fid
-
-            print(english_ids)
-            print(french_ids)
 
         self._indicator = next_indicator
 
