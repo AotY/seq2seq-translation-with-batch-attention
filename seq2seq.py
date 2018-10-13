@@ -9,6 +9,7 @@ from decoder_attn import BahdanauAttnDecoder
 from decoder_attn import LuongAttnDecoder
 
 from vocab import EOS_id
+from utils import init_lstm_orth
 
 
 class Seq2seq(nn.Module):
@@ -16,7 +17,7 @@ class Seq2seq(nn.Module):
                  encoder_hidden_size, encoder_num_layers, encoder_bidirectional,
                  decoder_vocab_size, decoder_embedding_size,
                  decoder_hidden_size, decoder_num_layers,
-                 dropout_ratio, padding_idx, tied):
+                 dropout_ratio, padding_idx, tied, device=None):
 
         # super class init
         super(Seq2seq, self).__init__()
@@ -33,8 +34,12 @@ class Seq2seq(nn.Module):
                                decoder_hidden_size, decoder_num_layers,
                                dropout_ratio, padding_idx, tied)
 
-    #  def train(self, encoder_inputs, encoder_input_lengths, decoder_input, decoder_targets, batch_size, max_len, teacher_forcing_ratio=0.5):
-        #  return self.forward(encoder_inputs, encoder_input_lengths, decoder_input, decoder_targets, batch_size, max_len, teacher_forcing_ratio)
+        gain = nn.init.calculate_gain('sigmoid')
+        init_lstm_orth(self.encoder, gain)
+        init_lstm_orth(self.decoder, gain)
+
+        self.device = device
+
 
     def forward(self, encoder_inputs, encoder_input_lengths,
                 decoder_input, decoder_targets, batch_size,
@@ -48,7 +53,7 @@ class Seq2seq(nn.Module):
 
         '''
         # encoder
-        encoder_hidden_state = self.encoder.init_hidden(batch_size)
+        encoder_hidden_state = self.encoder.init_hidden(batch_size, self.device)
 
         encoder_outputs, encoder_hidden_state = self.encoder(
             encoder_inputs, encoder_input_lengths, encoder_hidden_state)

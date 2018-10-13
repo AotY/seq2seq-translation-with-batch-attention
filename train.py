@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 import shutil
 
 import argparse
@@ -70,14 +71,14 @@ def build_optimizer(model):
 
 def train_epochs(data_set, model, optimizer, criterion):
     model.train()  # set to train state
-    for epoch in range(1, opt.epochs + 1):
+    for epoch in range(opt.start_epoch + 1, opt.epochs + 1):
         logger.info('---------------- epoch: %d --------------------' % (epoch))
         data_set.shuffle()
 
         total_loss = 0
         plot_losses = []
 
-        iters = data_set.get_size() // opt.batch_size + 1
+        iters = math.ceil(data_set.get_size() / opt.batch_size )
 
         for iter in range(1, 1 + iters):
             encoder_inputs, encoder_inputs_length, \
@@ -248,19 +249,22 @@ if __name__ == "__main__":
         reduction='elementwise_mean'
     )
 
-    if opt.train_from:
+    # Loading checkpoint
+    checkpoint = None
+    if opt.checkpoint:
         checkpoint = load_checkpoint(opt.checkpoint)
         model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
+        #  opt.start_epoch = checkpoint['epoch']
 
+    if opt.train_or_eval == 'eval':
         # eval
         while True:
             english = input("Please input an english sentence: ")
             french = evaluate(model, data_set, english)
             logger.info('evaluate:  english: %s ------> french: %s ' %
-                        (english, french))
-    else:
+                    (english, french))
+    elif opt.train_or_eval == 'train':
         # train
         train_epochs(data_set, model, optimizer, criterion)
 
-# --filename ./eng-fra.txt --encoder_embedding_size 100 --encoder_hidden_size 100 --encoder_num_layers 2 --encoder_bidirectional --decoder_embedding_size 100 --decoder_hidden_size 100 --decoder_num_layers 2 --tied --dropout_ratio 0.5 --max_len 20 --lr 0.001 --epochs 5 --batch_size 128 --teacher_forcing_ratio 0.5 --seed 7  --device cpu --log_interval 50 --log_file ./logs/train.log --model_save_path ./models --start_epoch 0

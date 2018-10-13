@@ -104,17 +104,14 @@ class Encoder(nn.Module):
     def get_output_hidden_size(self):
         return self.hidden_size * self.num_directions
 
-    def init_hidden(self, batch_size):
+    def init_hidden(self, batch_size, device):
         initial_state_scale = math.sqrt(3.0 / self.hidden_size)
 
         initial_state1 = torch.rand(
-            (self.num_directions * self.num_layers, batch_size, self.hidden_size))
+            (self.num_directions * self.num_layers, batch_size, self.hidden_size), device=device)
         initial_state2 = torch.rand(
-            (self.num_directions * self.num_layers, batch_size, self.hidden_size))
+            (self.num_directions * self.num_layers, batch_size, self.hidden_size), device=device)
 
-        initial_state1 = (-initial_state_scale - initial_state_scale) * \
-            initial_state1 + initial_state_scale
-        initial_state2 = (-initial_state_scale - initial_state_scale) * \
-            initial_state2 + initial_state_scale
-
+        nn.init.uniform_(initial_state1, a=-initial_state_scale, b=initial_state_scale)
+        nn.init.uniform_(initial_state2, a=-initial_state_scale, b=initial_state_scale)
         return (initial_state1, initial_state2)

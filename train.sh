@@ -16,17 +16,17 @@ python train.py \
     --max_len 20 \
     --min_count 3 \
     --lr 0.001 \
-    --epochs 5 \
+    --epochs 15 \
+    --start_epoch 5 \
     --batch_size 128 \
     --teacher_forcing_ratio 0.5 \
     --seed 7 \
-    --device cpu \
+    --device cuda \
     --log_interval 256 \
     --log_file ./logs/train.log \
     --model_save_path ./models \
-    # --train_from \
-    # --checkpoint ./models/checkpoint.epoch-5.pth \
-
+    --train_or_eval train \
+    --checkpoint ./models/checkpoint.epoch-5.pth \
 
 /
 
