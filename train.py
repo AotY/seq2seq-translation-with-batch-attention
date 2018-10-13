@@ -143,8 +143,6 @@ def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_target
     decoder_outputs=decoder_outputs.view(-1, decoder_outputs.shape[-1])
     decoder_targets=decoder_targets.view(-1)
 
-    print(decoder_outputs.device)
-    print(decoder_targets.device)
     loss=criterion(decoder_outputs, decoder_targets)
 
     # computes the gradient of current tensor, graph leaves.

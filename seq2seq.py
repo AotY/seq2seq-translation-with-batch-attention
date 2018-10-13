@@ -51,10 +51,6 @@ class Seq2seq(nn.Module):
             decoder_targets: [seq_len, batch_size]
 
         '''
-        encoder_inputs.to(device=self.device)
-        decoder_input.to(device=self.device)
-        decoder_targets.to(device=self.device)
-
         # encoder
         encoder_hidden_state = self.encoder.init_hidden(batch_size, self.device)
 
@@ -70,7 +66,7 @@ class Seq2seq(nn.Module):
         use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
         decoder_outputs = torch.zeros(
-            (max_len, batch_size, self.decoder.vocab_size))
+            (max_len, batch_size, self.decoder.vocab_size), device=self.device)
 
         if use_teacher_forcing:
             # Teacher forcing: Feed the target as the next input
@@ -80,7 +76,6 @@ class Seq2seq(nn.Module):
 
                 decoder_outputs[di] = decoder_output
                 decoder_input = decoder_targets[di].view(1, -1)
-
         else:
             # Without teacher forcing: use its own predictions as the next input
             for di in range(decoder_targets.shape[0]):
