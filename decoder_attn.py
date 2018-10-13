@@ -13,35 +13,37 @@ GlobalAttn
 
 
 class GlobalAttn(nn.Module):
-    def __init__(self, attn_method, hidden_size):
+    def __init__(self, attn_method, hidden_size, device):
 
         super(GlobalAttn, self).__init__()
 
         self.attn_method = attn_method
         self.hidden_size = hidden_size
+        self.device = device
 
         if self.attn_method == 'general':
             self.attn_linear = nn.Linear(self.hidden_size, self.hidden_size)
         elif self.attn_method == 'concat':
-            self.attn_linear = nn.Linear(self.hidden_size * 2, self.hidden_size)
-            self.v = nn.Parameter(torch.FloatTensor(1, self.hidden_size))
+            self.attn_linear = nn.Linear(
+                self.hidden_size * 2, self.hidden_size)
+            self.v = nn.Parameter(torch.FloatTensor(1, self.hidden_size, device=device))
 
     def forward(self, hidden_state, encoder_outputs):
         max_len, batch_size = encoder_outputs.shape[:2]
 
         #  encoder_outputs = encoder_outputs.transpose(0, 1) # [batch_size, seq_len, hidden_size]
 
-        attn_weights = torch.zeros((batch_size, max_len)) # [batch_size, max_len]
+        attn_weights = torch.zeros((batch_size, max_len), device=self.device)  # [batch_size, max_len]
 
         # For each batch of encoder outputs
         for batch_index in range(batch_size):
             #  weight for each encoder_output
             for len_index in range(max_len):
-                one_encoder_output = encoder_outputs[len_index, batch_index].unsqueeze(0) #[1, hidden_size]
-                one_hidden_state = hidden_state[batch_index, :].unsqueeze(0) # [1, hidden_size]
+                one_encoder_output = encoder_outputs[len_index, batch_index].unsqueeze(0)  # [1, hidden_size]
+                one_hidden_state = hidden_state[batch_index, :].unsqueeze(0)  # [1, hidden_size]
 
                 attn_weights[batch_index, len_index] = self.score(one_hidden_state,
-                                                                one_encoder_output)
+                                                                  one_encoder_output)
 
         # Normalize energies to weights in range 0 to 1
         attn_weights = F.softmax(attn_weights, dim=1)
@@ -65,8 +67,8 @@ class GlobalAttn(nn.Module):
             #  weight = self.v.dot(self.attn_linear(
                 #  torch.cat((one_hidden_state, one_encoder_output), dim=1)))
             weight = torch.dot(self.v.view(-1),
-                self.attn_linear(
-                    torch.cat((one_hidden_state, one_encoder_output), dim=1)).view(-1))
+                               self.attn_linear(
+                torch.cat((one_hidden_state, one_encoder_output), dim=1)).view(-1))
 
         return weight
 
@@ -84,7 +86,8 @@ BahdanauAttnDecoder:
 class BahdanauAttnDecoder(nn.Module):
     def __init__(self, vocab_size, embedding_size,
                  hidden_size, num_layers,
-                 dropout_ratio, padding_idx, tied):
+                 dropout_ratio, padding_idx,
+                 tied, device=None):
 
         super(BahdanauAttnDecoder, self).__init__()
 
@@ -102,7 +105,7 @@ class BahdanauAttnDecoder(nn.Module):
         self.dropout = nn.Dropout(dropout_ratio)
 
         # attn
-        self.attn = GlobalAttn('concat', self.hidden_size)
+        self.attn = GlobalAttn('concat', self.hidden_size, device)
 
         # hidden_size -> embedding_size, for attn
         if self.hidden_size != self.embedding_size:
@@ -148,8 +151,9 @@ class BahdanauAttnDecoder(nn.Module):
         # LSTM hidden_state (h, c)
         # hidden_state[0][-1]: [batch_size, hidden_size],
         # encoder_outputs: [max_len, batch_size, hidden_size]
-        attn_weights = self.attn(hidden_state[0][-1], encoder_outputs) #[batch_size, max_len]
-        attn_weights = attn_weights.unsqueeze(1) # [batch_size, 1, max_len]
+        # [batch_size, max_len]
+        attn_weights = self.attn(hidden_state[0][-1], encoder_outputs)
+        attn_weights = attn_weights.unsqueeze(1)  # [batch_size, 1, max_len]
         context = attn_weights.bmm(encoder_outputs.transpose(0, 1))
         context = context.transpose(0, 1)
 
@@ -157,7 +161,8 @@ class BahdanauAttnDecoder(nn.Module):
         if self.hidden_size != self.embedding_size:
             context = self.hidden_embedded_linear(context)
 
-        input_combine = torch.cat((context, embedded), dim=2) #[1, batch_size, embedding_size * 2]
+        # [1, batch_size, embedding_size * 2]
+        input_combine = torch.cat((context, embedded), dim=2)
 
         # lstm
         output, hidden_state = self.lstm(input_combine, hidden_state)
@@ -181,7 +186,10 @@ LuongAttnDecoder
 
 
 class LuongAttnDecoder(nn.Module):
-    def __init__(self, vocab_size, embedding_size, hidden_size, num_layers, dropout_ratio, padding_idx, tied, attn_method='concat'):
+    def __init__(self, vocab_size, embedding_size,
+                 hidden_size, num_layers, dropout_ratio,
+                 padding_idx, tied, attn_method='concat',
+                 device=None):
 
         super(LuongAttnDecoder, self).__init__()
 
@@ -200,7 +208,7 @@ class LuongAttnDecoder(nn.Module):
         self.dropout = nn.Dropout(dropout_ratio)
 
         # attn
-        self.attn = GlobalAttn(self.attn_method, self.hidden_size)
+        self.attn = GlobalAttn(self.attn_method, self.hidden_size, device)
 
         # LSTM
         self.lstm = nn.LSTM(self.embedding_size,
@@ -239,19 +247,24 @@ class LuongAttnDecoder(nn.Module):
         embedded = self.dropout(embedded)
 
         # Get current hidden state from input word and last hidden state
-        output, hidden_state = self.lstm(embedded, hidden_state) # output: [1, batch_size, hidden_size]
+        # output: [1, batch_size, hidden_size]
+        output, hidden_state = self.lstm(embedded, hidden_state)
 
         # Calculate attention from current RNN state and all encoder outputs;
         # apply to encoder outputs to get weighted average<Paste>
-        attn_weights = self.attn(output.squeeze(0), encoder_outputs) # [batch_size, max_len]
-        attn_weights = attn_weights.unsqueeze(1) #[batch_size, 1, max_len]
-        context = attn_weights.bmm(encoder_outputs.transpose(0, 1)) # [batch_size, 1, hidden_size]
-        context = context.transpose(0, 1) # [1, batch_size, hidden_size]
+        attn_weights = self.attn(output.squeeze(
+            0), encoder_outputs)  # [batch_size, max_len]
+        attn_weights = attn_weights.unsqueeze(1)  # [batch_size, 1, max_len]
+        # [batch_size, 1, hidden_size]
+        context = attn_weights.bmm(encoder_outputs.transpose(0, 1))
+        context = context.transpose(0, 1)  # [1, batch_size, hidden_size]
 
         # Attentional vector using the RNN hidden state and context vector
         # concatenated together (Luong eq. 5)
-        concat_input = torch.cat((context, output), dim=2) #[1, batch_size, hidden_size * 2]
-        concat_output = F.tanh(self.concat_linear(concat_input)) #[1, batch_size, hidden_size]
+        # [1, batch_size, hidden_size * 2]
+        concat_input = torch.cat((context, output), dim=2)
+        # [1, batch_size, hidden_size]
+        concat_output = F.tanh(self.concat_linear(concat_input))
 
         # linear
         output = self.linear(concat_output)

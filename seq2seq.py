@@ -40,11 +40,11 @@ class Seq2seq(nn.Module):
         elif decoder_attn_type == 'bahdanau':
             self.decoder = BahdanauAttnDecoder(decoder_vocab_size, decoder_embedding_size,
                                 decoder_hidden_size, decoder_num_layers,
-                                dropout_ratio, padding_idx, tied)
+                                dropout_ratio, padding_idx, tied, device)
         elif decoder_attn_type == 'luong':
             self.decoder = LuongAttnDecoder(decoder_vocab_size, decoder_embedding_size,
                                 decoder_hidden_size, decoder_num_layers,
-                                dropout_ratio, padding_idx, tied)
+                                dropout_ratio, padding_idx, tied, device)
 
         gain = nn.init.calculate_gain('sigmoid')
         init_lstm_orth(self.encoder.lstm, gain)
