@@ -84,7 +84,7 @@ class Seq2seq(nn.Module):
                 #  decoder_input = topi.squeeze().detach()
                 decoder_input = torch.argmax(decoder_output, dim=1).detach().view(1, -1)
 
-                ni = decoder_input[0].item()
+                ni = decoder_input[0][0].item()
                 if ni == EOS_id:
                     break
 
