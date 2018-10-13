@@ -40,6 +40,7 @@ train_opt(parser)
 opt = parser.parse_args()
 
 device = torch.device(opt.device)
+logger.info('device: {}'.format(device))
 
 ''' seq2seq_mode'''
 
@@ -56,7 +57,8 @@ def build_model(encoder_vocab, decoder_vocab):
                     decoder_num_layers=opt.decoder_num_layers,
                     dropout_ratio=opt.dropout_ratio,
                     padding_idx=PAD_id,
-                    tied=opt.tied)
+                    tied=opt.tied,
+                    device=device)
 
     print(model)
 
