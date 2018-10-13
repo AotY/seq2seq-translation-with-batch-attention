@@ -35,8 +35,8 @@ class Seq2seq(nn.Module):
                                dropout_ratio, padding_idx, tied)
 
         gain = nn.init.calculate_gain('sigmoid')
-        init_lstm_orth(self.encoder, gain)
-        init_lstm_orth(self.decoder, gain)
+        init_lstm_orth(self.encoder.lstm, gain)
+        init_lstm_orth(self.decoder.lstm, gain)
 
         self.device = device
 
