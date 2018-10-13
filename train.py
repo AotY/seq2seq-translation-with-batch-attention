@@ -250,7 +250,7 @@ if __name__ == "__main__":
         checkpoint = load_checkpoint(opt.checkpoint)
         model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
-        opt.start_epoch = checkpoint['epoch']
+        opt.start_epoch = checkpoint['epoch'] + 1
 
     if opt.train_or_eval == 'eval':
         # eval
