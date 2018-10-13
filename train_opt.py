@@ -124,9 +124,9 @@ def train_opt(parser):
                        default=128,
                        help='batch size')
 
-    group.add_argument('--train_from',
-                       action='store_true',
-                       help='loading checkpoint if we resume from a previous training.')
+    group.add_argument('--train_or_eval',
+                       type=str,
+                       help='select train model or eval model')
 
     group.add_argument('--checkpoint',
                        type=str, help='path to model s checkpoint.')
