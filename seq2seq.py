@@ -40,8 +40,6 @@ class Seq2seq(nn.Module):
         init_lstm_orth(self.encoder.lstm, gain)
         init_lstm_orth(self.decoder.lstm, gain)
 
-
-
     def forward(self, encoder_inputs, encoder_input_lengths,
                 decoder_input, decoder_targets, batch_size,
                 max_len, teacher_forcing_ratio):
@@ -90,7 +88,7 @@ class Seq2seq(nn.Module):
                 #  decoder_input = topi.squeeze().detach()
                 decoder_input = torch.argmax(decoder_output, dim=1).detach().view(1, -1)
 
-                ni = decoder_input[0].item()
+                ni = decoder_input[0][0].item()
                 if ni == EOS_id:
                     break
 
