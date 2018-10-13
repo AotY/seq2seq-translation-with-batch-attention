@@ -58,7 +58,6 @@ class Decoder(nn.Module):
         '''
 
         # embedded
-        input = input.view(1, -1)
         embedded = self.embedding(input) #[1, batch_size, embedding_size]
         embedded = self.dropout(embedded)
 

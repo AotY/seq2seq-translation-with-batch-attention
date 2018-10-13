@@ -71,7 +71,7 @@ class Seq2seq(nn.Module):
                     decoder_input, decoder_hidden_state, encoder_outputs)
 
                 decoder_outputs[di] = decoder_output
-                decoder_input = decoder_targets[di]
+                decoder_input = decoder_targets[di].view(1, -1)
 
         else:
             # Without teacher forcing: use its own predictions as the next input
@@ -82,7 +82,7 @@ class Seq2seq(nn.Module):
                 decoder_outputs[di] = decoder_output
                 #  topv, topi = decoder_output.topk(1, dim=1)
                 #  decoder_input = topi.squeeze().detach()
-                decoder_input = torch.argmax(decoder_output, dim=2).detach()
+                decoder_input = torch.argmax(decoder_output, dim=1).detach().view(1, -1)
 
                 ni = decoder_input[0].item()
                 if ni == EOS_id:
