@@ -49,9 +49,6 @@ class DataSet:
                     english_tokens = english_tokens[-min(max_len - 1, len(english_tokens)): ]
                     french_tokens = french_tokens[-min(max_len - 1, len(french_tokens)): ]
 
-                    print('english_tokens: {}'.format(english_tokens))
-                    print('french_tokens: {}'.format(french_tokens))
-
                     self._pairs.append(tuple([english_tokens, french_tokens]))
 
                     # add to vocab
@@ -88,10 +85,10 @@ class DataSet:
 
         next_pair = self._pairs[self._indicator: next_indicator]
 
-        batch_english_ids = torch.zeros(
-            (max_len, batch_size),
+        batch_english_ids = torch.zeros((max_len, batch_size),
             dtype=torch.long,
             device=self.device)
+
         batch_french_ids = torch.zeros((max_len, batch_size),
                                        dtype=torch.long,
                                        device=self.device)
@@ -116,7 +113,7 @@ class DataSet:
         self._indicator = next_indicator
 
         # english -> french or french -> english
-        return batch_english_ids, batch_french_ids, batch_english_lengths, batch_french_lengths
+        return batch_english_ids, batch_english_lengths, batch_french_ids, batch_french_lengths
 
     '''for evaluate'''
     def input_to_ids(self, input, max_len, language):

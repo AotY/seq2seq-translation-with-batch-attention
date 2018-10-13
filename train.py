@@ -80,11 +80,11 @@ def train_epochs(data_set, model, optimizer, criterion):
         iters = data_set.get_size() // opt.batch_size + 1
 
         for iter in range(1, 1 + iters):
-            encoder_inputs, decoder_targets, \
-                encoder_inputs_lengths, decoder_targets_length = data_set.next_batch(
+            encoder_inputs, encoder_inputs_length, \
+            decoder_targets, decoder_targets_length = data_set.next_batch(
                     batch_size=opt.batch_size, max_len=opt.max_len)
 
-            loss = train(encoder_inputs, encoder_inputs_lengths,
+            loss = train(encoder_inputs, encoder_inputs_length,
                          decoder_targets, decoder_targets_length,
                          model, optimizer, criterion)
 
@@ -120,8 +120,7 @@ def train_epochs(data_set, model, optimizer, criterion):
 
 def train(encoder_inputs, encoder_inputs_length, decoder_targets, decoder_targets_length, model, optimizer, criterion):
     # decoder input
-    decoder_input=torch.ones(
-        (1, opt.batch_size),
+    decoder_input=torch.ones((1, opt.batch_size),
         dtype=torch.long, device=device) * SOS_id
 
     #  print(encoder_inputs)

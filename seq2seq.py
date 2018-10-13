@@ -36,7 +36,9 @@ class Seq2seq(nn.Module):
     #  def train(self, encoder_inputs, encoder_input_lengths, decoder_input, decoder_targets, batch_size, max_len, teacher_forcing_ratio=0.5):
         #  return self.forward(encoder_inputs, encoder_input_lengths, decoder_input, decoder_targets, batch_size, max_len, teacher_forcing_ratio)
 
-    def forward(self, encoder_inputs, encoder_input_lengths, decoder_input, decoder_targets, batch_size, max_len, teacher_forcing_ratio):
+    def forward(self, encoder_inputs, encoder_input_lengths,
+                decoder_input, decoder_targets, batch_size,
+                max_len, teacher_forcing_ratio):
         '''
         input:
             encoder_inputs: [seq_len, batch_size]
@@ -65,24 +67,24 @@ class Seq2seq(nn.Module):
         if use_teacher_forcing:
             # Teacher forcing: Feed the target as the next input
             for di in range(decoder_targets.shape[0]):
-                output, decoder_hidden_state, attn_weights = self.decoder(
+                decoder_output, decoder_hidden_state, attn_weights = self.decoder(
                     decoder_input, decoder_hidden_state, encoder_outputs)
 
-                decoder_outputs[di] = output
+                decoder_outputs[di] = decoder_output
                 decoder_input = decoder_targets[di]
 
         else:
             # Without teacher forcing: use its own predictions as the next input
             for di in range(decoder_targets.shape[0]):
-                output, decoder_hidden_state, attn_weights = self.decoder(
+                decoder_output, decoder_hidden_state, attn_weights = self.decoder(
                     decoder_input, decoder_hidden_state, encoder_outputs)
 
-                decoder_outputs[di] = output
-                #  topv, topi = output.topk(1, dim=1)
+                decoder_outputs[di] = decoder_output
+                #  topv, topi = decoder_output.topk(1, dim=1)
                 #  decoder_input = topi.squeeze().detach()
-                decoder_input = torch.argmax(output).detach()
+                decoder_input = torch.argmax(decoder_output, dim=2).detach()
 
-                ni = decoder_input.item()
+                ni = decoder_input[0].item()
                 if ni == EOS_id:
                     break
 
@@ -111,14 +113,14 @@ class Seq2seq(nn.Module):
             (max_len, batch_size, self.decoder.vocab_size))
 
         for di in range(encoder_inputs.shape[0]):
-            output, decoder_hidden_state, attn_weights = self.decoder(
+            decoder_output, decoder_hidden_state, attn_weights = self.decoder(
                 decoder_input, decoder_hidden_state, encoder_outputs)
 
-            print('output: ', output.shape)
-            decoder_outputs[di] = output
-            #  topv, topi = output.topk(1, dim=1)
+            print('decoder_output: ', decoder_output.shape)
+            decoder_outputs[di] = decoder_output
+            #  topv, topi = decoder_output.topk(1, dim=1)
             #  decoder_input = topi.squeeze().detach()
-            decoder_input = torch.argmax(output).detach()
+            decoder_input = torch.argmax(decoder_output).detach()
 
             ni = decoder_input[0].item()
             if ni == EOS_id:
