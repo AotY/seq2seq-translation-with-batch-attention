@@ -43,9 +43,11 @@ class DataSet:
                     french_tokens = [token.lower() for token in word_tokenize(french, language='french')]
 
                     # french contains a sos or eos
-                    if len(english_tokens) > max_len or len(
-                            french_tokens) + 1 > max_len:
+                    if len(english_tokens) > max_len + 10 or len(french_tokens) > max_len + 10:
                         continue
+
+                    english_tokens = english_tokens[-min(max_len - 1, len(english_tokens)): ]
+                    french_tokens = french_tokens[-min(max_len - 1, len(french_tokens)): ]
 
                     self._pairs.append(tuple((english_tokens, french_tokens)))
 
@@ -84,10 +86,10 @@ class DataSet:
         next_pair = self._pairs[self._indicator: next_indicator]
 
         batch_english_ids = torch.zeros(
-            (max_len, batch_size), 
+            (max_len, batch_size),
             dtype=torch.long,
             device=self.device)
-        batch_french_ids = torch.zeros((max_len, batch_size), 
+        batch_french_ids = torch.zeros((max_len, batch_size),
                                        dtype=torch.long,
                                        device=self.device)
 
