@@ -42,6 +42,8 @@ opt = parser.parse_args()
 device = torch.device(opt.device)
 logger.info('device: {}'.format(device))
 
+#  troch.random.manual_seed(opt.seed)
+
 ''' seq2seq_mode'''
 
 

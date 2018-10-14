@@ -29,7 +29,7 @@ class Vocab:
     ''' filtering words by min count'''
     def filter_words(self, min_count=3):
         sorted_list = sorted(self.word2count.items(), key=lambda item: item[1], reverse=True)
-        sorted_list = [item for item in sorted_list if item[1] > 3]
+        sorted_list = [item for item in sorted_list if item[1] > min_count]
         for word, _ in sorted_list:
             self.word2idx[word] = self.n_words
             self.n_words += 1
